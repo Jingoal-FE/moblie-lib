@@ -1,0 +1,310 @@
+.clearfix:after 
+{
+  content: "";
+  display: block;
+  clear: both;
+  height: 0;
+  line-height: 0;
+  visibility: hidden;
+}
+
+.componentAttachContent{
+	position: relative;
+	padding: 8px 15px 8px 0px;
+	margin-left: 11px;
+	border-width: 0 0 1px 0;
+	font-size: 14px;
+	color: #707070;
+    /*
+	-webkit-border-image: url('../img/line-gray.png') 2 0 stretch;
+    border-image: url('../img/line-gray.png') 2 0 stretch;
+    */
+}
+
+.componentAttachLine{
+	margin: 0px 0px 0px 15px;
+	padding: 8px 15px 8px 0px;
+	font-size: 14px;
+	color: #707070;
+	border-width: 1px 0 0 0;
+    /*
+	-webkit-border-image: url('../img/line-gray.png') 2 0 stretch;
+    border-image: url('../img/line-gray.png') 2 0 stretch;
+    */
+}
+
+.componentAttachDetailWrap{
+	position: relative;
+	padding: 0px 40px;
+	height: 37px;
+}
+
+.componentAttachePicIcon{
+	background: url("../img/jpg.png") 0 0 no-repeat;
+	background-size: 32px 37px;
+}
+
+.componentAttachDetail{
+	padding-top: 2px;
+}
+
+.componentAttachNameWrap{
+	margin-right: 30px;
+    white-space: nowrap;
+}
+
+.componentAttachDetail .componentAttachLeft{
+	float: left;
+	max-width: 100%;
+	white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.componentAttachDetail span, .componentAttachSize{
+	font-size: 14px;
+	line-height: 18px;
+}
+
+.componentProcessComponent{
+	position: absolute;
+	width: 32px;
+	height: 37px;
+	left: 0px;
+	top: 0px;
+}
+
+.componentProcessCircleMask{
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	width: 32px;
+	height: 37px;
+	border-radius: 3px;
+	background: transparent url("../img/processMasker.png") 0 0 no-repeat;
+	background-size: 32px 37px;
+}
+
+.componentProcessCircleWrapper{
+	position: absolute;
+	left: 0px;
+	top:0px;
+	width: 24px;
+	height: 25px;
+	padding: 7px 4px 5px 4px;
+	border-radius: 3px;
+}
+
+.componentProcessCircle{
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	background: #ffffff;
+	position: relative;
+	opacity: 1;
+}
+
+.componentProcessCircleLeft, .componentProcessCircleRight{
+	position: absolute;
+	width:24px; 
+	height:24px;
+	left: 0px;
+	top: 0px;
+}
+
+.componentProcessCircleLeft .componentLeft, .componentProcessCircleRight .componentRight{
+	width:24px; 
+	height:24px;
+	background:#00aacc;
+	border-radius: 50%;
+	position: absolute;
+  	top: 0;
+  	left: 0;
+}
+
+.componentProcessCircleRight, .componentRight {
+	clip:rect(0,auto,auto,12px);
+}
+
+.componentProcessCircleLeft, .componentLeft {
+	clip:rect(0,12px,auto,0);
+}
+
+.componentProcessCircleStatus{
+	width: 18px;
+	height: 18px;
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	border-radius: 50%;
+}
+
+.componentProcessPauseStatus{
+	background: #3083A9 url("../img/download.png") 7px 6px no-repeat; 
+	background-size: 6px 7px;
+}
+
+.componentProcessLoadingStatus{
+	background: #3083A9 url("../img/pause.png") 7px 6px no-repeat; 
+	background-size: 6px 7px;
+}
+
+.componentAttachStatus{
+	width: 13px;
+	height: 13px;
+	background: url("../img/attachsStatus.png") 0px 0px no-repeat;
+	background-size: 13px 13px;
+	position: absolute;
+	top: 35px;
+	left: 23px;
+}
+
+.componentDeleteAttach{
+	margin-right: 20px;
+	position: absolute;
+	width: 27px;
+	height: 27px;
+	top: 14px;
+	right: 0px;
+	background: url("../img/deleteAttach.png") 0px 0px no-repeat;
+	background-size: 27px 27px;
+}
+
+.componentAttachDownload{
+	margin-right: 0px;
+	position: absolute;
+	width: 37px;
+	height: 37px;
+	top: 0px;
+	right: 0px;
+	background: url("../img/downloadAttach.png") center center no-repeat;
+	background-size: 27px 27px;
+}
+
+.unknowSuffix{
+	background: url("../img/unknow.png") 0 0 no-repeat;
+	background-size: 32px 37px;
+}
+
+.apkSuffix{
+	background: url("../img/apk.png") 0 0 no-repeat;
+	background-size: 32px 37px;
+}
+
+.htmlSuffix{
+	background: url("../img/html.png") 0 0 no-repeat;
+	background-size: 32px 37px;
+}
+
+.javaSuffix{
+	background: url("../img/java.png") 0 0 no-repeat;
+	background-size: 32px 37px;
+}
+
+.pictureSuffix{
+	background: url("../img/jpg.png") 0 0 no-repeat;
+	background-size: 32px 37px;
+}
+
+.videoSuffix{
+	background: url("../img/mov.png") 0 0 no-repeat;
+	background-size: 32px 37px;
+}
+
+.audioSuffix{
+	background: url("../img/music.png") 0 0 no-repeat;
+	background-size: 32px 37px;
+}
+
+.pdfSuffix{
+	background: url("../img/pdf.png") 0 0 no-repeat;
+	background-size: 32px 37px;
+}
+
+.pptSuffix{
+	background: url("../img/ppt.png") 0 0 no-repeat;
+	background-size: 32px 37px;
+}
+
+.docSuffix{
+	background: url("../img/doc.png") 0 0 no-repeat;
+	background-size: 32px 37px;
+}
+
+.compressSuffix{
+	background: url("../img/rar.png") 0 0 no-repeat;
+	background-size: 32px 37px;
+}
+
+.txtSuffix{
+	background: url("../img/txt.png") 0 0 no-repeat;
+	background-size: 32px 37px;
+}
+
+.xlsSuffix{
+	background: url("../img/xls.png") 0 0 no-repeat;
+	background-size: 32px 37px;
+}
+
+#componentPopupTipWrap
+{
+    position: fixed;
+    top: 50%;
+    left:50%;
+    max-width: 120px;
+    min-width: 60px;
+    padding: 20px 15px 15px 15px;
+    background-color: rgba(44,44,44,0.9);
+    border-radius: 8px;
+    z-index: 3;
+    opacity: 0;
+}
+
+.componentLoadingIcon
+{
+    width: 30px;
+    height: 30px;
+    background: url(../img/icon_list_white_loading.png) 0 0 no-repeat;
+    -webkit-background-size: 26px 26px;
+    background-size: 30px 30px;
+    margin: 0 auto 4px;
+    -webkit-animation-name:loading;
+    -webkit-animation-duration:2s;
+    -webkit-transform: translate3d(0, 0, 0);
+    -webkit-animation-iteration-count:infinite;
+    -webkit-animation-timing-function:linear;
+    transform: translate3d(0, 0, 0);
+}
+
+.componentErrorIcon
+{
+    width: 30px;
+    height: 30px;
+    background: url(../img/error.png) 0 0 no-repeat;
+    -webkit-background-size: 30px 30px;
+    background-size: 30px 30px;
+    margin: 0 auto 4px;
+}
+
+.componentOkIcon
+{
+    width: 30px;
+    height: 30px;
+    background: url(../img/ok.png) 0 0 no-repeat;
+    -webkit-background-size: 30px 30px;
+    background-size: 30px 30px;
+    margin: 0 auto 4px;
+}
+
+#componentPopupTipText
+{
+    padding-top: 10px;
+    margin-top: 5px;
+    font-size: 13px;
+    color:#fff;
+    text-align: center;
+}
+
+.componentAttaches .componentAttachItem:last-child .componentAttachContent{
+	border-width: 0;
+}

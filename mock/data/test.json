@@ -1,0 +1,11 @@
+{
+    "meta": {
+        "code": 200,
+        "message": "请求成功"
+    },
+    "data": {
+        "id" : 111,
+        "name": "detail list",
+        "age": 1024
+    }
+}

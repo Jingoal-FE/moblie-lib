@@ -1,0 +1,391 @@
+/**
+ * @file fn.scss
+ * @author deo
+ *
+ * 函数包
+ */
+
+@import "border-1px";
+
+/**
+ * 求平方根
+ *
+ */
+@function sqrt ($r) {
+    $x0: 1;
+    $x1: $x0;
+
+    @for $i from 1 through 10 {
+        $x1: $x0 - ($x0 * $x0 - abs($r)) / (2 * $x0);
+        $x0: $x1;
+    }
+
+    @return $x1;
+}
+
+/**
+ * 获取等腰直角三角形斜边长度
+ *
+ * @param {$hypo} 直角边长度
+ */
+@function getOpposite ($hypo) {
+    @return sqrt($hypo * $hypo * 2);
+}
+
+/**
+ * $px 转换 px
+ *
+ */
+@function rem ($px) {
+    @return $px / $browser-default-font-size * 1rem;
+}
+
+/**
+ * icon 左上角的 icon 图标
+ *
+ * @param {$bg} bg-color
+ * @param {$size} nubmer
+ */
+@mixin icon-corner ($bg: #666, $size: 28) {
+
+    position: absolute;
+    width: $size + px;
+    height: $size + px;
+    overflow: hidden;
+    border-radius: 2px 0 0 0;
+    z-index: 1;
+
+    em {
+        position: absolute;
+        z-index: 1;
+        font-size: rem(10px);
+        color: $white;
+        left: 3px;
+        top: 2px;
+    }
+
+    &:after {
+        display: block;
+        content: ' ';
+        position: absolute;
+        z-index: 0;
+        left: 0;
+        top: 0;
+        background: $bg;
+        transform-origin: 0 0;
+        transform: rotate(45deg);
+        
+        width: getOpposite($size) + px;
+        height: getOpposite($size) + px;
+        top: getOpposite(getOpposite($size)) * -0.5 + px;
+    }
+}
+
+/**
+ * ellipsis
+ * support multi line (webkit only)
+ *
+ */
+@mixin ellipsis ($line: 1) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    
+    @if ($line == 1) {
+       white-space: nowrap;
+    }
+    @else {
+        display: -webkit-box;
+        -webkit-line-clamp: $line;
+        -webkit-box-orient: vertical;
+    }
+}
+
+/**
+ * clearfix
+ */
+@mixin clearfix () {
+    *zoom: 1;
+    overflow: hidden;
+
+    &:before,
+    &:after {
+        display: table;
+        line-height: 0;
+        content: ' ';
+    }
+    &:after {
+        clear: both;
+    }
+}
+
+/**
+ * 列布局函数，默认两列
+ *
+ * @param {$left-width} px
+ * @param {$right-width} [两列] px
+ *
+ */
+@mixin column ($left-width, $right-width: 0px) {
+    display: box;
+    box-pack: center;
+    box-align: center;
+    height: auto;
+
+    div {
+        
+        float: left;
+
+        &.column-left {
+            width: $left-width;
+        }
+
+        &.column-middle {
+            width: 100%;
+            margin: 0 ($right-width * -1) 0 ($left-width * -1);
+
+            .column-inner {
+                float: none;
+                margin: 0 ($right-width) 0 ($left-width);
+                @include ellipsis();
+            }
+        }
+        
+        @if $right-width != 0 {
+            &.column-right {
+                float: right;
+                width: $right-width;
+            }
+        }
+    }
+}
+
+/**
+ * 获取实际箭头方向
+ *
+ * @param {$dir} [往右] 箭头方向
+ *
+ */
+@function getArrowDir ($dir) {
+    
+    @if $dir == 'right' {
+        @return 'left';
+    }
+    @else if $dir == 'top' {
+        @return 'bottom';
+    }
+    @else if $dir == 'bottom' {
+        @return 'top';
+    }
+
+    @return 'right';
+}
+
+/**
+ * 箭头
+ *
+ * @param {$size} px 箭头大小
+ * @param {$dir} [往右] 箭头方向
+ * @param {$color} [#C2C7CC] 箭头颜色
+ *
+ */
+@mixin arrow ($size, $dir: right, $color: #C2C7CC) {
+
+    $width: 0;
+    $height: 0;
+    
+    @if $dir == 'right' or $dir == 'left' {
+        $width: $size;
+        $height: $size * 2;
+    }
+    @else {
+        $width: $size * 2;
+        $height: $size * 2;
+    }
+
+    width: $width;
+    height: $height;
+    overflow: hidden;
+
+    i {
+        @if $dir == 'right' {
+            margin-left: 0;
+        }
+        @else if $dir == 'left' {
+            margin-left: $size * -1;
+        }
+        @else if $dir == 'top' {
+            margin-top: $size * .55 * -1;
+        }
+        @else if $dir == 'bottom' {
+            margin-top: $size * .55;
+        }
+
+        width: 0;
+        height: 0;
+        border: $size solid transparent;
+        border-#{getArrowDir($dir)}-color: $color;
+    }
+}
+
+/**
+ * 可点击态箭头
+ *
+ * @param {$size} px 箭头大小
+ * @param {$dir} [往右] 箭头方向
+ * @param {$color} [#C2C7CC] 箭头颜色
+ *
+ */
+@mixin arrow-more ($size, $dir: right, $color: #C2C7CC) {
+
+    @include arrow($size, $dir, $color);
+
+    $dir-left: 0px;
+    $dir-top: 0px;
+    $dis-a: ($size + 2) * -1;
+    $dis-b: ($size * -1 + 2);
+    $dis-c: ($size * -1);
+
+    @if $dir == 'right' {
+        $dir-left: $dis-a;
+        $dir-top: $dis-c;
+    }
+    @else if $dir == 'left' {
+        $dir-left: $dis-b;
+        $dir-top: $dis-c;
+    }
+    @else if $dir == 'top' {
+        $dir-left: $dis-c;
+        $dir-top: $dis-b;
+    }
+    @else if $dir == 'bottom' {
+        $dir-left: ($size * -1);
+        $dir-top: $dis-a;
+    }
+
+    i {
+        position: relative;
+
+        &:after {
+            position: absolute;
+            content: ' ';
+            left: $dir-left;
+            top: $dir-top;
+            border: $size solid transparent;
+            border-#{getArrowDir($dir)}-color: #fff;
+        }
+
+        &:after {
+            margin: 0 !important;
+        }
+    }
+}
+
+/**
+ * 加载中样式
+ *
+ * @param {$size} 大小
+ * @param {$border} border 大小
+ * @param {$color-form} 开始颜色
+ * @param {$color-mid} 中间色
+ * @param {$color-to} 结束颜色
+ *
+ */
+@mixin loading($size: 20px, $border: 2px, $bg: #fff, $color-form: #F1F2F4, $color-mid: #CECFD3, $color-to: #ABADB2) {
+    
+    width: $size;
+    height: $size;
+    border-radius: 100%;
+    position: relative;
+    overflow: hidden;
+    
+    // 左半边区域
+    background: linear-gradient(to bottom, $color-to 0%, $color-mid 100%);
+    
+    // 旋转吧漏腚君
+    animation: 1.2s linear 0s normal none infinite loading-rotate;
+
+    &:before {
+        content: '';
+        position: absolute;
+        left: $size * .5;
+        top: 0;
+        width: $size * .5;
+        height: $size;
+        
+        // 右半边区域
+        background: linear-gradient(to bottom, $color-form 0%, $color-mid 100%);
+    }
+
+    &:after {
+        content: '';
+        position: absolute;
+        left: $border;
+        top: $border;
+        width: $size - $border * 2;
+        height: $size - $border * 2;
+        background: $bg;
+        border-radius: 100%;
+    }
+
+    @keyframes loading-rotate {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+}
+
+/**
+ * @param {$num} tab 的数量
+ * @author deo
+ *
+ */
+@mixin fixbar($num, $color: #fff) {
+    width: 100%;
+    height: rem(46px);
+
+    ul {
+        @include border-1px(top);
+    }
+
+    ul {
+        width: 100%;
+        position: fixed;
+        z-index: 2;
+        bottom: 0;
+        display: -webkit-box;
+        display: -moz-box;
+        display: box;
+        background: $color;
+
+        li {
+            -moz-box-flex: $num;
+            -webkit-box-flex: $num;
+            box-flex: $num;
+            text-align: center;
+            height: rem(24px);
+            line-height: rem(24px);
+            padding: rem(11px) 0;
+            color: $gray;
+
+            &.selected {
+                color: $blue;
+            }
+        }
+    }
+
+    // 带左侧边线
+    &.border {
+
+        ul {
+            li {
+
+                &:not(:first-child) {
+                    @include border-1px(left);
+                }
+            }
+        }
+    }
+}

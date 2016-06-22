@@ -1,0 +1,57 @@
+{
+  "name": "jingoal-mobile",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "dependencies": {
+    "http-proxy": "^1.13.2"
+  },
+  "devDependencies": {
+    "autoprefixer-loader": "^3.2.0",
+    "bell-on-bundler-error-plugin": "^1.0.8",
+    "connect": "^3.4.1",
+    "copy-webpack-plugin": "^1.1.1",
+    "css-loader": "^0.23.1",
+    "ejs-loader": "^0.2.1",
+    "extract-text-webpack-plugin": "^1.0.1",
+    "file-loader": "^0.8.5",
+    "glob": "^7.0.3",
+    "gulp": "^3.9.1",
+    "gulp-connect": "^3.2.2",
+    "gulp-mock-server": "^1.0.17",
+    "gulp-util": "^3.0.7",
+    "gutil": "^1.6.4",
+    "html-loader": "^0.4.3",
+    "html-webpack-plugin": "^2.15.0",
+    "http-proxy": "^1.14.0",
+    "image-webpack-loader": "^1.6.3",
+    "mustache": "^2.2.1",
+    "mustache-loader": "^0.3.1",
+    "node-sass": "^3.6.0",
+    "path": "^0.12.7",
+    "sass": "^0.5.0",
+    "sass-loader": "^3.2.0",
+    "source-map": "^0.5.3",
+    "style-loader": "^0.13.0",
+    "underscore": "^1.8.3",
+    "url-loader": "^0.5.7",
+    "webpack": "^1.12.14",
+    "webpack-dev-server": " ^1.14.1"
+  },
+  "scripts": {
+    "build": "export NODE_ENV=prod && webpack -p",
+    "build-win": "set NODE_ENV=prod && webpack -p",
+    "build-test": "export NODE_ENV=prod && webpack",
+    "build-test-win": "set NODE_ENV=prod && webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/denglingbo/jingoal-mobile.git"
+  },
+  "author": "deo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/denglingbo/jingoal-mobile/issues"
+  },
+  "homepage": "https://github.com/denglingbo/jingoal-mobile#readme"
+}

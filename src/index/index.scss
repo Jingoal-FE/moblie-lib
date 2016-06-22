@@ -1,0 +1,24 @@
+@import "../common/css/global.scss";
+
+.page-failed {
+
+    height: 100px;
+    background: #fff;
+}
+
+#main {
+
+    .name, .age {
+        padding: 0 rem(10px);
+        font-size: rem(14px);
+        width: rem(100px);
+        height: rem(20px);
+        line-height: rem(20px);
+        background: #ccc;
+        margin-top: rem(5px);
+    }
+    .age {
+        font-size: 14px;
+        width: 100px;
+    }
+}

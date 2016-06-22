@@ -1,0 +1,116 @@
+#!/bin/bash
+
+# exec git diff-index --check --cached HEAD --
+# check if fecs installed first
+# then run fecs check
+# if fail exec 1 to stop from committing
+
+# back to thr root of git repo workspace
+unset GIT_DIR
+
+# check if something need to be committed
+HAS_CHANGED=$(git diff-index --cached --name-status HEAD)
+
+if [ -z "$HAS_CHANGED" ]; then
+    echo "warn: nothing has been committed"
+    echo "commit end"
+    exit 1
+fi
+
+# check if fecs is installed
+# outputing to file can stop the error from printing on the console
+FECS=$(fecs -v > fecs.test 2>&1)
+exec 0<fecs.test
+read line
+FECS_UNINSTALLED=$(echo "$line" | grep "command not found")
+if [ -n "$FECS_UNINSTALLED" ]; then
+    echo "warn: run \"npm install -g fecs\" first before you commit"
+    echo "commit failed"
+    rm fecs.test
+    exit 1
+fi
+
+all_ok=true
+
+# only js extension file will run fecs
+EXT="js css"
+read -a files <<< $HAS_CHANGED
+
+# echo "${files[0]}"
+next=1
+for file in ${files[@]}; do
+    `echo "$file" | grep -q "[D]\s*"`
+    if [ $? -eq 0 ]; then
+        next=0
+        continue
+    else
+        `echo "$file" | grep -q "[MARUC]\s*"`
+        if [ $? -eq 0 ]; then
+            continue
+        fi
+    fi
+
+    if [ $next -eq 0 ]; then
+        next=1
+        continue
+    fi
+
+    file_name=`echo ${file#[MADRUC]*}`
+    `echo "$file_name" | grep -q "dep\/*"`
+    if [ $? -eq 0 ]; then
+        continue
+    fi
+
+    file_ext=${file_name#*\.}
+    `echo "$EXT" | grep -q "$file_ext"`
+    if [ $? -ne 0 ]; then
+        continue;
+    fi
+
+    echo -e "\nfecs checking file <" $file_name "> ......"
+    FECS_CHECK=$(fecs check $file_name --rule --ignore='**/dep/**' > fecs.check)
+    # $? 
+    # eval "fecs check $file"
+    # cmd above only print the first line output, it sucks
+    # If the -r option is given, this signifies `raw’ input, and / escaping is disabled
+    # pipe would make i back to 0 after while
+
+    i=0
+    while read -r line; do
+        echo ${line}
+
+        echo "$line" | grep -q "ERROR"
+        if [ $? -eq 0 ]; then
+            all_ok=false
+        else
+            echo "$line" | grep -q "WARN"
+            if [ $? -eq 0 ]; then
+                all_ok=false
+            fi
+        fi
+
+        echo "$line" | grep -q "Everything is OK"
+        if [ $? -eq 0 ]; then
+            break
+        fi
+        # i=`exp $i + 1`
+        # ((i++))
+    done < fecs.check
+
+    # if [ $i -gt 2 ]; then
+    #    all_ok=false
+    # fi
+done
+
+rm fecs.test
+if [ -a "fecs.check" ]; then
+    rm fecs.check
+fi
+
+if [ "$all_ok" = false ]; then
+    echo -e "\nwarn: CAN NOT commit before fecs is OK!"
+    echo "commit failed"
+    exit 1
+fi
+
+exit 0

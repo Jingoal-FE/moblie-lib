@@ -4,11 +4,25 @@
  *
  * 日志
  * <dom data-log='{"actionTag": "key name"}'
+ *
+ * log.store({actionTag: xxx, ...})
  */
+
+var PRODUCT_TAG = 'task';
+var KEY = 'TASK_LOG';
+// 当本地队列长度大于等于 {num} 则发送
+var SEND_LENGTH = 2;
 
 /* eslint-disable */
 var config = require('../config');
-var util = require('./util');
+var util = require('common/util');
+var localstorage = require('common/localstorage');
+
+if (localstorage.getData(KEY) === null) {
+    localstorage.addData(KEY, []);
+}
+
+var localLogArr = localstorage.getData(KEY) || [];
 
 window.onerror = function (err, url, lineno) {
 
@@ -48,30 +62,38 @@ var defaultOpts = {
     cid: util.getParam('cid'),
     client: util.getParam('client'),
     puse: util.getParam('puse'),
-    productTag: 'task'
+    lang: util.getParam('lang'),
+    appver: util.getParam('appver'),
+    productTag: PRODUCT_TAG
 };
 
-// 存储发送队列
-var queue = [];
-
 /**
- * 日志发送
+ * 日志储存到本地，等待发送
  *
  * @param  {Object} opts 日志参数对象
  */
-function send(opts) {
+function store(opts) {
+    if (!opts) {
+        return;
+    }
 
-    // 添加到队列
-    queue.push(opts);
+    if (!$.isArray(localLogArr)) {
+        localLogArr = [];
+    }
 
-    // 开始消费
-    consume();
+    if (opts && !opts.time) {
+        opts.time = +new Date();
+    }
+
+    localLogArr.push(opts);
+
+    localstorage.addData(KEY, localLogArr || []);
 }
 
 /**
  * 根据队列中所存储的任务来发送
  */
-function consume() {
+function consume(queue, callback) {
     if (queue.length === 0) {
         return;
     }
@@ -81,7 +103,7 @@ function consume() {
 
         if (config.debug) {
             /* eslint-disable */
-            // console.log(params);
+            console.log(params);
             /* eslint-enable */
             return;
         }
@@ -96,6 +118,7 @@ function consume() {
         var img = new Image();
         var key = 'img' + Date.now() + Math.ceil(Math.random() * 100);
         window[key] = img;
+
         img.onload = img.onerror = function () {
             delete window[key];
         };
@@ -103,10 +126,20 @@ function consume() {
         img.src = url;
     }
 
-    var params;
+    for (var i = 0; i < queue.length; i++) {
+        execLog(queue[i]);
+    }
+}
 
-    while (params = queue.pop()) {
-        execLog(params);
+/**
+ * 日志发送
+ */
+function send() {
+    if (localLogArr && localLogArr.length >= SEND_LENGTH) {
+        consume(localLogArr);
+
+        // 发送之后清空 localstorge
+        localstorage.addData(KEY, []);
     }
 }
 
@@ -174,30 +207,6 @@ function getIndex(element) {
 }
 
 /**
- * 获取 selector
- *
- * @param {HTMLElement} target dom元素对象
- * @param {string} appendInfo, 附加信息
- * @return {string}
- */
-// function getSelector(target, appendInfo) {
-//     try {
-//         var s = '';
-
-//         if (target.id) {
-//             s = '#' + target.id;
-//         }
-//         else if (target.className) {
-//             // 为了避免太多，这里只取第一个
-//             s = '.' + target.className.split(' ')[0];
-//         }
-
-//         return (appendInfo || '') + s;
-//     }
-//     catch (ex) {}
-// }
-
-/**
  * 获取元素的Xpath
  *
  * @param  {HTMLElement} target dom元素对象
@@ -251,16 +260,23 @@ function init() {
     // pageName && sendPv();
 
     // 绑定事件到含有 data-log的节点
-    $(document.body).off('click').on('click', '[data-log]', function (e) {
+    var $body = $(document.body);
+
+    $body.off('click');
+    $body.on('click', '[data-log]', function (event) {
         var params = parseLogData(this);
         params.xpath = getXpath(this);
-        send(params);
+
+        // 储存
+        store(params);
     });
 }
 
+// 触发发送
+send();
+
 module.exports = {
     init: init,
-    send: send
-    // sendPv: sendPv
-    // addDefaultParams: addDefaultParams
+    send: send,
+    store: store
 };

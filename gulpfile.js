@@ -45,8 +45,8 @@ var config = {
 
     debug: true,
 
-    host: '127.0.0.1',
-    // host: getIp(),
+    // host: '127.0.0.1',
+    host: getIp(),
 
     port: 8014,
 

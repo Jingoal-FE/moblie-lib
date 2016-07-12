@@ -10,6 +10,8 @@ var ERR_MSG = {
     NOT_RENDERED: 'You should render Control first'
 };
 
+// var Listener = require('./listener');
+// var listener = new Listener();
 var listener = require('./listener');
 var util = require('./util');
 var view = require('./view');
@@ -206,7 +208,7 @@ Control.prototype.init = function () {};
  */
 Control.prototype.render = function (data, type) {
 
-    var selector = $(this.opts.wrapper);
+    var selector = $(this.opts.main);
     var options = {
         tmpl: this.opts.tpl,
         partials: this.opts.partials,
@@ -224,7 +226,7 @@ Control.prototype.render = function (data, type) {
  */
 Control.prototype.error = function (data) {
 
-    var selector = $(this.opts.wrapper);
+    var selector = $(this.opts.main);
     var options = {
         tmpl: this.opts.errTpl,
         type: 'html'

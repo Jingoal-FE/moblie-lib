@@ -3,12 +3,12 @@
  * @author deo
  */
 'use strict';
+
 var _ = require('underscore');
 var path = require('path');
 var webpack = require('webpack');
 var CopyPlugin = require('copy-webpack-plugin');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
-
 
 var dep = path.join(__dirname, '/dep/');
 var common = path.join(__dirname, '/src/common/');
@@ -28,6 +28,9 @@ module.exports = function () {
     if (config.debug) {
         webpackConfig.devtool = 'eval-source-map';
     }
+    else {
+        webpackConfig.devtool = false;
+    }
 
     // 页面 js 入口
     webpackConfig.entry = this.jsEntries;
@@ -44,17 +47,17 @@ module.exports = function () {
         }
     ];
 
-    // 非生产环境，需要使用 mock cordova.js 
-    if (process.env.NODE_ENV !== 'prod') {
-        copyPlugins.push({
-            from: './cordova.js',
-            to: './cordova.js'
-        });
-    }
-    // 生产环境
-    else {
-        webpackConfig.devtool = false;
-    }
+    // // 非生产环境，需要使用 mock cordova.js 
+    // if (process.env.NODE_ENV !== 'prod') {
+    //     copyPlugins.push({
+    //         from: './cordova.js',
+    //         to: './cordova.js'
+    //     });
+    // }
+    // // 生产环境
+    // else {
+    //     webpackConfig.devtool = false;
+    // }
 
     // 设置 resolve
     webpackConfig.resolve = {
@@ -65,9 +68,7 @@ module.exports = function () {
         alias: {
             zepto: dep + 'zepto',
             dep: dep,
-            common: common,
-
-            mob: dep + 'ui/mobiscroll/js/mobiscroll-2.17.0.js'
+            common: common
         },
 
         extensions: ['', '.js', '.tpl', '.html']
@@ -89,6 +90,8 @@ module.exports = function () {
         // chunkFilename: config.debug ? '[chunkhash:8].chunk.js' : 'common/js/[chunkhash:8].chunk.min.js'
         chunkFilename: config.debug ? 'chunk.js' : 'js/chunk.min.js'
     };
+
+    // webpackConfig.externals = {};
 
     // 图片 path
     // img 为 输出后的 图片的 文件夹

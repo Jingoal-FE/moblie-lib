@@ -1,0 +1,30 @@
+/**
+ * @file dataloader.scss
+ * @author deo
+ *
+ * dataloader 基础样式
+ */
+
+.hide {
+    display: none;
+}
+
+.dataloader-refresh,
+.dataloader-more {
+    text-align: center;
+    width: 100%;
+    font-size: 12px;
+    height: 40px;
+    line-height: 40px;
+}
+
+/* 刷新条 */
+.dataloader-refresh {
+    border-bottom: 1px solid #eee;
+    position: absolute;
+    margin-top: -40px;
+}
+
+/* 加载更多 */
+.dataloader-more {
+}

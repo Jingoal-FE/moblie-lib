@@ -29,61 +29,61 @@ var getHeaders = function (origin) {
     };
 };
 
+var fn = function (req, res, dir) {
+
+    var url = req.url.replace(/(\?.+)/, '');
+    var origin = req.headers.origin;
+
+    var expr = /\/data\/(.+)/.exec(url);
+    var file = null;
+
+    if (expr && expr.length > 1) {
+        file = dir + '/data/' + expr[1] + '.json';
+
+        console.log(file);
+
+        try {
+            var buffer = fs.readFileSync(file);
+
+            res.writeHead(200, getHeaders(origin));
+
+            res.end(JSON.stringify(JSON.parse(buffer)));
+        }
+        catch (ex) {
+
+            // 耍你1秒钟
+            setTimeout(function () {
+
+                res.writeHead(404, getHeaders(origin));
+
+                res.end(JSON.stringify({
+                    error: ex
+                }));
+            }, 1000)
+        }
+    }
+    else {
+
+        res.writeHead(404, getHeaders(origin));
+
+        res.end(JSON.stringify({
+            error: '[' + url + '] Error.'
+        }));
+    }
+};
+
 module.exports = function (dir, config, isHttps) {
-
-    var serverDo = function (req, res) {
-
-        var url = req.url.replace(/(\?.+)/, '');
-        var origin = req.headers.origin;
-
-        var expr = /\/data\/(.+)/.exec(url);
-        var file = null;
-
-        if (expr && expr.length > 1) {
-            file = dir + '/data/' + expr[1] + '.json';
-
-            console.log(file);
-
-            try {
-                var buffer = fs.readFileSync(file);
-
-                res.writeHead(200, getHeaders(origin));
-
-                res.end(JSON.stringify(JSON.parse(buffer)));
-            }
-            catch (ex) {
-
-                // 耍你1秒钟
-                setTimeout(function () {
-
-                    res.writeHead(404, getHeaders(origin));
-
-                    res.end(JSON.stringify({
-                        error: ex
-                    }));
-                }, 1000)
-            }
-        }
-        else {
-
-            res.writeHead(404, getHeaders(origin));
-
-            res.end(JSON.stringify({
-                error: '[' + url + '] Error.'
-            }));
-        }
-    };
 
     var server;
 
-    if (isHttps) {
-        server = https.createServer(options, function (req, res) {
-            serverDo(req, res);
+    if (!isHttps) {
+        server = http.createServer(function (req, res) {
+            fn(req, res, dir);
         });
     }
     else {
-        server = http.createServer(function (req, res) {
-            serverDo(req, res);
+        server = https.createServer(options, function (req, res) {
+            fn(req, res, dir);
         });
     }
 

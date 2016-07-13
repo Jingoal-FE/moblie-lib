@@ -7,13 +7,16 @@
 
 var CONST = require('./lib/const');
 var template = require('./lib/template');
-var Scroller = require('./lib/scroller');
 
 var Control = require('common/control');
 var util = require('common/util');
 
+var Scroller = require('./lib/scroller');
+
 /**
- * Main
+ * Main Mai Ma M
+ *
+ * @param {Ojbect} options, 配置项
  */
 var DataLoader = function (options) {
 
@@ -27,29 +30,59 @@ var DataLoader = function (options) {
     this.opts = getOptions(options);
 
     // 调用 Scroll
-    Scroller.call(this);
+    if (this.isScrollModel()) {
+
+        Scroller.call(this);
+
+        // 下拉刷新 只有 滚动加载模式才有
+        this.$refresh = null;
+        this._refreshDisable = false;
+    }
 
     /**
      * 设置一些基础配置
      */
     this.page = this.opts.page;
+
+    /**
+     * Ajax Promise
+     */
     this.promise = this.opts.promise;
 
     this.$wrapper = $(this.opts.wrapper);
     this.$main = options.main;
 
-    this.$refresh = null;
+    /**
+     * 加载更多的 DOM
+     */
     this.$more = null;
 
+    /**
+     * 请求发送的时间
+     */
     this.reqStart = null;
+
+    /**
+     * 请求成功或者失败的时间
+     */
     this.reqEnd = null;
 
-    // 是否正在加载数据
+    /**
+     * 是否正在加载数据
+     */
     this._process = false;
 
+    /**
+     * 加载更多是否被禁用
+     */
     this._moreDisable = false;
-    this._refreshDisable = false;
 
+    /**
+     * 是否数据全部加载完毕
+     */
+    this._isAllLoaded = false;
+
+    // Innnnnnit
     this.init();
 };
 
@@ -118,7 +151,7 @@ function getOptions(options) {
          * 数据列表
          * @param {string} result.{dataRoot}.list
          */
-        dataKey: 'list',
+        // dataKey: 'list',
 
         /**
          * 总数据
@@ -126,11 +159,20 @@ function getOptions(options) {
          */
         totalKey: 'total',
 
-        // 语言包设置
-        lang: function () {},
+        /**
+         * 语言包设置
+         * @param {Function}
+         */
+        lang: function () {
+            // this.setMore({default: 'xx', ...});
+            // this.setRefresh({process: 'yy', ...});
+        },
 
-        onComplete: function () {},
-        onFailed: function () {}
+        /**
+         * 当数据为空的时候，自动隐藏加载更多
+         * @param {boolean}
+         */
+        autoNullHide: false
 
     }, options);
 };
@@ -152,6 +194,7 @@ $.extend(DataLoader.prototype, {
         // 允许修改默认语言包
         me.opts.lang.call(template.lang);
 
+        // 滚动刷新模式下，才初始化滚动事务
         if (me.isScrollModel()) {
 
             // By require('./scroller.js')
@@ -165,23 +208,20 @@ $.extend(DataLoader.prototype, {
 
         me.moreHeight = me.$more.height();
 
-        // 初次数据加载
-        me.send(CONST.MORE)
-            .done(function (data) {
-                me.opts.onComplete && me.opts.onComplete.call(me, data);
-            })
-            .fail(function () {
-                me.opts.onFailed && me.opts.onFailed.call(me, null);
-            });
+        // 初次请求，使用 more 的接口
+        me.requestMore(true);
 
         me.bindEvents();
     },
 
+    /**
+     * 绑定事件
+     */
     bindEvents: function () {
         var me = this;
 
-        me.on(CONST.EVENT_REFRESH_BACK, function () {
-            me.keepRefresh();
+        me.$more.on('click', function () {
+            me.requestMore();
         });
     },
 
@@ -212,62 +252,6 @@ $.extend(DataLoader.prototype, {
 
     onlyOnePage: function () {
         return this._isAllLoaded && this.page === 1;
-    },
-
-    /**
-     * 保持下拉刷新一直存在
-     *
-     * @return {boolean} 是否内容高度小于可视高度
-     */
-    keepRefresh: function () {
-
-        // 渲染了 DOM 节点之后，这里再对 _moreDisable 和 加载更多的 状态文字做一个处理
-        if (this.$main.height() <= this.opts.height) {
-            this._moreDisable = true;
-
-            if (this.isNull()) {
-                this.moreUpdate(CONST.NULL);
-            }
-            else {
-                this.moreUpdate(CONST.MAX);
-            }
-
-            // 这里的高度是 可视高度 - 加载更多的高度 + 1
-            // 这个 + 1 很有道理哟，就是让内容容器刚好大于可视高度
-            var fixHeight = this.opts.height - this.$more.height() + 1;
-
-            // 在数据少的时候，依旧要保持可以使用下拉刷新功能
-            this.$main.height(fixHeight);
-
-            // 让容器可以下拉刷新
-            this.scroll.refresh();
-
-            // 去掉高度设置
-            this.$main.height('auto');
-
-            return true;
-        }
-
-        // 让容器可以下拉刷新
-        if (this._type !== CONST.REFRESH) {
-            this.scroll.refresh();
-        }
-
-        return false;
-    },
-
-    /**
-     * 检查加载状态条
-     *
-     */
-    checkStatusBar: function () {
-        var me = this;
-
-        // Refresh 的逻辑在 bindEvents 中
-        // this.on(CONST.EVENT_REFRESH_BACK, function () { ...
-        if (this._type !== CONST.REFRESH) {
-            me.keepRefresh();
-        }
     },
 
     /**
@@ -318,13 +302,53 @@ $.extend(DataLoader.prototype, {
     },
 
     /**
+     * 请求更多数据
+     *
+     * @param {boolean} isFirst, true or false
+     */
+    requestMore: function (isFirst) {
+        var me = this;
+
+        var dfd = me.send(CONST.MORE);
+
+        if (!dfd) {
+            return;
+        }
+
+        dfd
+            .done(function (data) {
+                // true: 第一次加载
+                me.fireSuccess(CONST.MORE, data, isFirst);
+
+                if (me.isScrollModel()) {
+                    me.keepRefresh();
+                }
+            })
+            .fail(function () {
+                me.fireFail();
+            });
+    },
+
+    /**
      * 请求数据接口 逻辑
      *
      * @param {string} type, 'refresh' or 'more'
-     * @return {Deferred}
+     * @return {Deferred|null}
      */
     send: function (type) {
         var me = this;
+
+        // 刷新动作
+        var isRefresh = (type === CONST.REFRESH);
+
+        if (isRefresh) {
+            me.page = 1;
+        }
+
+        // 非刷新操作 && 数据加载完毕，则不做后面的请求了
+        if (!isRefresh && me._isAllLoaded) {
+            return null;
+        }
 
         type = type || CONST.MORE;
 
@@ -337,13 +361,6 @@ $.extend(DataLoader.prototype, {
 
         // 数据正在加载
         me._process = true;
-
-        // 刷新动作
-        var isRefresh = (type === CONST.REFRESH);
-
-        if (isRefresh) {
-            me.page = 1;
-        }
 
         // 以备请求失败，把参数还原
         var storePage = me.page;
@@ -384,7 +401,7 @@ $.extend(DataLoader.prototype, {
                 // refresh 处理逻辑, 启用上拉加载更多的判断条件
                 // 数据没有全部加载完毕
                 // 是否当前数据只有 一页 存在
-                if (isRefresh && me._isAllLoaded === false && !me.onlyOnePage()()) {
+                if (isRefresh && me._isAllLoaded === false && !me.onlyOnePage()) {
                     me._moreDisable = false;
                 }
 
@@ -392,23 +409,27 @@ $.extend(DataLoader.prototype, {
                 if (me._isAllLoaded === true) {
                     me.moreUpdate(CONST.MAX);
                     me._moreDisable = true;
+
                     // 使用加载前的 pagenum
                     me.page = storePage;
                 }
 
                 // 无数据
                 if (isNull) {
-                    me.moreUpdate(CONST.NULL);
+                    if (me.opts.autoNullHide) {
+                        me.moreUpdate();
+                    }
+                    else {
+                        me.moreUpdate(CONST.NULL);
+                    }
                     me._moreDisable = true;
+
                     // 使用加载前的 pagenum
                     me.page = storePage;
                 }
 
                 // 有数据的情况，才返回 data
                 dfd.resolve.call(me, isNull ? null : data);
-
-                // 检查状态条
-                me.checkStatusBar();
             })
             .fail(function () {
                 me.reqEnd = +new Date();
@@ -421,10 +442,16 @@ $.extend(DataLoader.prototype, {
                 dfd.reject.call(me, null);
 
                 me.statusUpdate(classObj, CONST.FAIL);
-            })
-            .always(function () {});
+            });
 
         return dfd;
+    },
+
+    /**
+     * 请求成功 数据为空
+     */
+    fireNull: function () {
+        this.fire.call(this, CONST.EVENT_NULL);
     },
 
     /**
@@ -440,7 +467,7 @@ $.extend(DataLoader.prototype, {
     /**
      * 请求失败 触发自定义绑定的事件
      */
-    fireFailed: function () {
+    fireFail: function () {
         this.fire.call(this, CONST.EVENT_FAIL, null);
     }
 });

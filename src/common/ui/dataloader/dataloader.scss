@@ -9,6 +9,11 @@
     display: none;
 }
 
+/* 该容器为 ./lib/scroller.js 自动添加 */
+.data-loader-iscroll-wrapper {
+    -webkit-transform: translate3d(0, 0, 0);
+}
+
 .dataloader-refresh,
 .dataloader-more {
     text-align: center;

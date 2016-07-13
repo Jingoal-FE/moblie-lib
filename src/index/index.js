@@ -4,7 +4,7 @@
  *
  * 首页
  */
-
+/* eslint-disable */
 require('./index.scss');
 
 var config = require('../config');

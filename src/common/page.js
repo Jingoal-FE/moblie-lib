@@ -675,7 +675,7 @@ Page.ajax = function (api, data, options, retryDfd) {
             if (config.debug) {
                 setTimeout(function () {
                     dfd.resolve(result);
-                }, 1100);
+                }, 100);
             }
             else {
                 dfd.resolve(result);

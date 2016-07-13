@@ -20,5 +20,6 @@ module.exports = {
 
     // 事件名
     EVENT_FAIL: 'fail',
+    EVENT_NULL: 'null',
     EVENT_REFRESH_BACK: 'refreshBack'
 };

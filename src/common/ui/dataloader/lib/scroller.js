@@ -4,10 +4,10 @@
  *
  * 用于 dataloader.js 处理滚动事务
  */
+
 var CONST = require('./const');
 var template = require('./template');
 var IScroll = require('dep/iscroll');
-var util = require('common/util');
 
 function Scroller() {
 
@@ -72,10 +72,8 @@ Scroller.prototype = {
         var iscrollWrapper = 'data-loader-iscroll-wrapper';
 
         // IScroll 必须要在实际滚动的容器外部包裹一个，为了不影响本身的结构，自动添加一个 div 包裹实际的 $main
-        // 'refresh' & more 2个 加载条与该容器同级
+        // 'refresh' & 'more' 2个 加载条与该容器同级
         this.$main.wrap('<div class="' + iscrollWrapper + '"></div>');
-
-        var $scroll = this.$wrapper.find('.' + iscrollWrapper);
 
         // 外部容器的基础设置
         this.$wrapper.css({
@@ -94,7 +92,6 @@ Scroller.prototype = {
         // 绑定 iscroll 功能
         this.scroll = new IScroll(this.$wrapper[0], {
 
-            // 为了较为准确的加载数据，这里需要设置为 3
             probeType: 3,
             scrollX: false,
             scrollY: true,
@@ -109,7 +106,8 @@ Scroller.prototype = {
 
             // 快速触屏的势能缓冲开关
             // 苹果打开势能
-            momentum: util.isApple()
+            // momentum: util.isApple()
+            momentum: true
         });
 
         this.bindScrollEvents();
@@ -121,9 +119,25 @@ Scroller.prototype = {
     bindScrollEvents: function () {
         var me = this;
 
+        // 下拉刷新 在刷新返回之后，下拉功能的设置
+        me.on(CONST.EVENT_REFRESH_BACK, function () {
+            me.keepRefresh();
+        });
+
         // 这里做加载的判断
         me.scroll.on('scroll', function () {
             var target = this;
+
+            // 关键位置，非常非常
+            // 下拉刷新的时候，将顶部定在下拉刷新条的位置
+            if (!me._refreshDone && target.y < me.refreshHeight && me._type === CONST.REFRESH) {
+                me.scroll.scrollTo(0, me.refreshHeight);
+            }
+
+            // 在释放的动作中，如果已经存在请求了，则停止后面所有的判断和设置
+            if (!me._refreshDone) {
+                return;
+            }
 
             // 设置当前滚动的方向
             // -1 代表 上拉
@@ -133,12 +147,6 @@ Scroller.prototype = {
             // 1 代表 下拉
             else {
                 me._dir = 1;
-            }
-
-            // 关键位置，非常非常
-            // 下拉刷新的时候，将顶部定在下拉刷新条的位置
-            if (!me._refreshDone && target.y < me.refreshHeight && me._type === CONST.REFRESH) {
-                me.scroll.scrollTo(0, me.refreshHeight);
             }
 
             // 数据没有请求的时候才做检测
@@ -165,15 +173,13 @@ Scroller.prototype = {
 
         // 监听滚动结束
         me.scroll.on('scrollEnd', function () {
-            var target = this;
+            me._scrollEnd = true;
 
             // 关键位置：如果为下拉刷新，同时 scroll 监听中进入 scrollTo 的判断条件
             // 下拉刷新的情况，滚动结束之后把顶部定位到 下拉条位置，等待后续动画
             if (me._type === CONST.REFRESH) {
                 me.refreshBackListener();
             }
-
-            me._scrollEnd = true;
         });
 
         // 鼠标放开的时候判断是否需要刷新
@@ -189,40 +195,104 @@ Scroller.prototype = {
                     return;
                 }
 
-                if (type !== null && me._inRange) {
-
-                    // 标记下拉刷新整个逻辑未完成
-                    if (type === CONST.REFRESH) {
-                        me._refreshDone = false;
-                    }
-
-                    me.send(type)
-                        .done(function (data) {
-                            // 下拉刷新 加载成功 回调
-                            me.fireSuccess(type, data);
-
-                            // 回滚动画完成之后 触发 iscroll 刷新
-                            if (type === CONST.REFRESH) {
-                                me.refreshBackListener();
-                            }
-                            // 上拉加载更多
-                            else {
-                                me.scroll && me.scroll.refresh();
-                                me.resetStatus();
-                            }
-                        })
-                        .fail(function () {
-                            // 失败
-                            me.fireFailed();
-                        })
-                        .always(function () {});
-                }
+                me.scrollLoadData(type);
             });
 
-        // 下拉刷新返回动画结束之后
+
+        // 下拉刷新返回动画结束之后 刷新 iscroll
         me.on(CONST.EVENT_REFRESH_BACK, function () {
             me.scroll && me.scroll.refresh();
         });
+    },
+
+    /**
+     * 滚动加载数据的入口
+     *
+     * @param {string} type, refresh or more
+     */
+    scrollLoadData: function (type) {
+        var me = this;
+
+        if (type !== null && me._inRange) {
+
+            // 标记下拉刷新整个逻辑未完成
+            // 这里对 _refreshDone 设置成 false ，便于 on('scroll' ... 处理
+            if (type === CONST.REFRESH) {
+                me._refreshDone = false;
+            }
+
+            var dfd = me.send(type);
+
+            if (!dfd) {
+                return;
+            }
+
+            dfd
+                .done(function (data) {
+                    // 下拉刷新 加载成功 回调
+                    me.fireSuccess(type, data);
+
+                    // 回滚动画完成之后 触发 iscroll 刷新
+                    if (type === CONST.REFRESH) {
+                        me.refreshBackListener();
+                    }
+                    // 上拉加载更多
+                    else {
+                        me.scroll && me.scroll.refresh();
+                        me.resetParams();
+
+                        me.keepRefresh();
+                    }
+                })
+                .fail(function () {
+                    // 失败
+                    me.fireFail();
+                });
+        }
+    },
+
+    /**
+     * 保持下拉刷新一直存在
+     *
+     * @return {boolean} 是否内容高度小于可视高度
+     */
+    keepRefresh: function () {
+
+        // 渲染了 DOM 节点之后，这里再对 _moreDisable 和 加载更多的 状态文字做一个处理
+        if (this.$main.height() <= this.opts.height) {
+
+            // 这里对状态文字和上拉加载的设置需要判断在实际渲染内容小于可视区域的时候时候 是否数据都加载完毕了
+            if (this._isAllLoaded) {
+                this._moreDisable = true;
+
+                if (this.isNull()) {
+                    !this.opts.autoNullHide && this.moreUpdate(CONST.NULL);
+                }
+                else {
+                    this.moreUpdate(CONST.MAX);
+                }
+            }
+
+            // 这里的高度是 可视高度 - 加载更多的高度 + 1
+            // 这个 + 1 很有道理哟，就是让内容容器刚好大于可视高度
+            var fixHeight = this.opts.height - this.$more.height() + 1;
+
+            // 在数据少的时候，依旧要保持可以使用下拉刷新功能
+            this.$main.height(fixHeight);
+
+            // 让容器可以下拉刷新
+            this.scroll && this.scroll.refresh();
+
+            // 去掉高度设置
+            this.$main.height('auto');
+
+            return true;
+        }
+
+        // 让容器可以下拉刷新
+        this.scroll && this.scroll.refresh();
+
+        return false;
     },
 
     /**
@@ -247,7 +317,7 @@ Scroller.prototype = {
     /**
      * 下拉刷新的返回动画
      */
-    refreshScrollBack: function (type) {
+    refreshScrollBack: function () {
         var me = this;
         var delayScroll = 120;
         var delayBack = 200;
@@ -260,21 +330,24 @@ Scroller.prototype = {
             // 成功的返回动画
             me.scroll.scrollTo(0, 0, delayScroll);
 
-            // 重置状态文字
-            me.refreshUpdate(CONST.DEFAULT);
-
-            me.resetStatus();
+            me.resetParams();
 
             me._scrollBackDone = setTimeout(function () {
                 // 返回完成之后 触发 下拉刷新
                 // 传递 一个 刷新类型
                 me.fire(CONST.EVENT_REFRESH_BACK, CONST.REFRESH);
+
+                // 重置状态文字
+                me.refreshUpdate(CONST.DEFAULT);
             }, delayScroll);
 
         }, delayBack);
     },
 
-    resetStatus: function () {
+    /**
+     * 重置参数
+     */
+    resetParams: function () {
 
         this._refreshDone = true;
         this._type = null;
@@ -293,16 +366,16 @@ Scroller.prototype = {
         }
 
         // 进入界定范围
-        if (target.y > this.refreshHeight * 1.5) {
+        if (target.y > this.refreshHeight * 1.4) {
             this._inRange = true;
             this._type = CONST.REFRESH;
-            
+
             this.refreshUpdate(CONST.HOLDER);
         }
         // 移出制定范围，只把 inRange 重置， _type 继续保留
         else {
             this._inRange = false;
-            
+
             this.refreshUpdate(CONST.DEFAULT);
         }
     },
@@ -321,7 +394,7 @@ Scroller.prototype = {
         // 下方滑动出的距离
         var diff = target.maxScrollY - target.y;
 
-        if (diff > this.moreHeight) {
+        if (diff > this.moreHeight * .8) {
             this._inRange = true;
             this._type = CONST.MORE;
 

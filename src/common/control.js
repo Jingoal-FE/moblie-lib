@@ -77,6 +77,13 @@ function Control(opts) {
     this.wrapper = this.opts.wrapper;
 
     /**
+     * Control.render 要渲染到的位置，默认为 wrapper
+     *
+     * @type {HTMLElement}
+     */
+    this.renderTo = this.opts.renderTo || this.wrapper;
+
+    /**
      * 控件渲染后的HTML
      *
      * @type {string}
@@ -207,11 +214,10 @@ Control.prototype.init = function () {};
  * @return {string}
  */
 Control.prototype.render = function (data, type) {
-
-    var selector = $(this.opts.main);
+    var selector = $(this.renderTo);
     var options = {
-        tmpl: this.opts.tpl,
-        partials: this.opts.partials,
+        tmpl: this.tpl,
+        partials: this.partials,
         type: type || 'html'
     };
 
@@ -226,9 +232,9 @@ Control.prototype.render = function (data, type) {
  */
 Control.prototype.error = function (data) {
 
-    var selector = $(this.opts.main);
+    var selector = $(this.renderTo);
     var options = {
-        tmpl: this.opts.errTpl,
+        tmpl: this.errTpl,
         type: 'html'
     };
 
@@ -283,13 +289,12 @@ Control.prototype.disposeDoms = function () {
         }
     }
 
-    var main = this.main;
-    if (main) {
-        var nodes = $.isArray(main) ? main : [main];
-        var parentNode = nodes[0].parentNode;
-        nodes.forEach(function (node) {
-            parentNode.removeChild(node);
-        });
+    if (this.main) {
+
+        var nodes = this.main.children();
+        
+        nodes.remove();
+
         this.main = null;
     }
 };

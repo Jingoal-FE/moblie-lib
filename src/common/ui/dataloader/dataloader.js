@@ -9,7 +9,6 @@ var CONST = require('./lib/const');
 var template = require('./lib/template');
 
 var Control = require('common/control');
-var util = require('common/util');
 
 var Scroller = require('./lib/scroller');
 
@@ -18,12 +17,15 @@ var Scroller = require('./lib/scroller');
  *
  * @param {Ojbect} options, 配置项
  */
-var DataLoader = function (options) {
+function DataLoader(options) {
 
     /**
      * 获取 wrapper 节点下的 <div data-loader="content"> ... </div> 作为内容容器
      */
     options.main = options && $(options.wrapper).find('[data-loader=content]');
+
+    // 该组件，因 iScroll && 上拉 下拉 2个 容器的位置原因，将 render 位置 指向 Control.main
+    options.renderTo = options.main;
 
     Control.call(this, options);
 
@@ -84,7 +86,7 @@ var DataLoader = function (options) {
 
     // Innnnnnit
     this.init();
-};
+}
 
 $.extend(DataLoader.prototype, Control.prototype);
 
@@ -118,7 +120,7 @@ function getOptions(options) {
          * @param {Function} #required
          *
          * promise: function () {
-         *      return page.ajax, page.get, page.post, $.ajax, ...  
+         *     return page.ajax, page.get, page.post, $.ajax, ...
          * }
          */
         promise: null,
@@ -161,7 +163,6 @@ function getOptions(options) {
 
         /**
          * 语言包设置
-         * @param {Function}
          */
         lang: function () {
             // this.setMore({default: 'xx', ...});
@@ -175,7 +176,7 @@ function getOptions(options) {
         autoNullHide: false
 
     }, options);
-};
+}
 
 $.extend(DataLoader.prototype, {
 
@@ -202,8 +203,9 @@ $.extend(DataLoader.prototype, {
         }
 
         // 添加 加载更多
+        var html = this.getControlHtml('dataloader-more', template.getMoreHtml());
         me.$main.after(
-            me.$more = $(template.getMoreHtml())
+            me.$more = $(html)
         );
 
         me.moreHeight = me.$more.height();
@@ -212,6 +214,22 @@ $.extend(DataLoader.prototype, {
         me.requestMore(true);
 
         me.bindEvents();
+    },
+
+    /**
+     * 获取 下拉刷新、上拉加载更多的 html 字符串
+     *
+     * @param {string} className, 外层容器的 class name
+     * @param {string} childHtml, 子 DOM html 字符串
+     * @return {string} html string
+     */
+    getControlHtml: function (className, childHtml) {
+
+        if (this.$wrapper.find('.' + className).length) {
+            this.$wrapper.find('.' + className).remove();
+        }
+
+        return '<div class="' + className + '">' + childHtml + '</div>';
     },
 
     /**
@@ -355,9 +373,6 @@ $.extend(DataLoader.prototype, {
         var dfd = new $.Deferred();
 
         me.reqStart = +new Date();
-
-        // 记录一下当前page 页
-        var curpage = me.page;
 
         // 数据正在加载
         me._process = true;

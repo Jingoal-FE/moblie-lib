@@ -34,42 +34,48 @@ moreClass[CONST.NULL] = 'dataloader-more-null';
 
 /**
  * 获取加载条内部dom
+ *
+ * @param {Object} c, class object
+ * @param {string} type, more or refresh lang.js lang = {...}
+ * @return {string}
  */
 function getHtml(c, type) {
 
     var htmlArr = [];
 
     for (var k in c) {
-        var myClass = c[k];
+        if (c.hasOwnProperty(k)) {
+            var myClass = c[k];
 
-        if (k !== CONST.DEFAULT) {
-            myClass += ' hide';
+            if (k !== CONST.DEFAULT) {
+                myClass += ' hide';
+            }
+
+            htmlArr.push('<div class="' + myClass + '">' + lang[type][k] + '</div>');
         }
-
-        htmlArr.push('<div class="' + myClass + '">' + lang[type][k] + '</div>');
     }
 
     return htmlArr.join('');
-};
+}
 
 /**
  * 用于重新加载数据
+ *
+ * @return {string}
  */
 var getRefreshHtml = function () {
 
-    var html = getHtml(refreshClass, CONST.REFRESH);
-
-    return '<div class="dataloader-refresh">' + html + '</div>';
+    return getHtml(refreshClass, CONST.REFRESH);
 };
 
 /**
  * 用于加载更多数据
+ *
+ * @return {string}
  */
 var getMoreHtml = function () {
 
-    var html = getHtml(moreClass, CONST.MORE);
-
-    return '<div class="dataloader-more">' + html + '</div>';
+    return getHtml(moreClass, CONST.MORE);
 };
 
 module.exports = {

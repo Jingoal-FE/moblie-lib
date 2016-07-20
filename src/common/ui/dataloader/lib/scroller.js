@@ -83,8 +83,9 @@ Scroller.prototype = {
         });
 
         // 添加 刷新条
+        var html = this.getControlHtml('dataloader-refresh', template.getRefreshHtml());
         this.$main.before(
-            this.$refresh = $(template.getRefreshHtml())
+            this.$refresh = $(html)
         );
 
         this.refreshHeight = this.$refresh.height();
@@ -249,6 +250,16 @@ Scroller.prototype = {
                     me.fireFail();
                 });
         }
+    },
+
+    /**
+     * 直接发送刷新请求
+     */
+    requestRefresh: function () {
+        this._inRange = true;
+
+        this.scroll.scrollTo(0, this.refreshHeight);
+        this.scrollLoadData(CONST.REFRESH);
     },
 
     /**

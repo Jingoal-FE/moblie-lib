@@ -10,7 +10,7 @@ var util = require('./util');
 var storage = require('./localstorage');
 var Control = require('./control');
 var lang = require('./lang');
-var log = require('./log');
+// var log = require('./log');
 var md5 = require('dep/md5');
 
 var ajaxError = require('./ui/ajaxError');
@@ -332,11 +332,11 @@ Page.prototype.failed = function (errObj) {
     // 掉线不发送错误 log
     if (err.code !== 1) {
         /* eslint-disable */
-        log.send({
-            'da_src': 'err: ' + err.msg + ' url: ' + window.location.href
-                + ' pageLog: ' + util.qs.stringify(window.pageLog),
-            'da_act': 'error'
-        });
+        // log.send({
+        //     'da_src': 'err: ' + err.msg + ' url: ' + window.location.href
+        //         + ' pageLog: ' + util.qs.stringify(window.pageLog),
+        //     'da_act': 'error'
+        // });
         /* eslint-enable */
     }
 
@@ -355,10 +355,10 @@ Page.prototype.error = function () {};
 Page.prototype.done = function () {
     this.isDone = true;
 
-    log.init();
+    // log.init();
 
     // 把 log 的相关操作放到 page 上
-    this.log = log;
+    // this.log = log;
 };
 
 /**
@@ -519,7 +519,7 @@ var tokenListenerCount = 0;
 // 当前重试次数
 var tokenRetryCount = 0;
 // 允许最大重试次数
-var tokenRetryMax = 2;
+var tokenRetryMax = 8;
 // 重试中
 var tokenRetryProcess = false;
 
@@ -615,8 +615,7 @@ Page.ajax = function (api, data, options, retryDfd) {
         dataType: opts.dataType,
         timeout: 5000,
         headers: {
-            'campo-proxy-request': true,
-            'x-spdy-bypass': true
+            'campo-proxy-request': true
         },
         contentType: 'application/json; charset=utf-8'
     };
@@ -688,7 +687,7 @@ Page.ajax = function (api, data, options, retryDfd) {
         tokenFailedRetry(xhr.status, {
 
             // 重试成功、重试失败 重新发送请求
-            // 失败重试为 2 次
+            // 失败重试为 {num} 次
             onRetry: function () {
                 Page.ajax(api, data, options, dfd);
             },

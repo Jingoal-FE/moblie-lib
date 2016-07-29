@@ -7,14 +7,15 @@
 
 var exports = {};
 
-var $window = $(window);
+// var $window = $(window);
 
 /**
  * 修正 fixed 到底部的输入框在 IOS 中的 bug
  */
 exports.thirdkeyboard = {
 
-    timer: null,
+    // 延迟执行键盘弹出后的输入框置地动画 timer id
+    delayTimerId: null,
 
     /**
      * 弹开键盘之前的滚动条高度
@@ -24,28 +25,34 @@ exports.thirdkeyboard = {
 
     /**
      * 打开键盘的修正代码
+     *
+     * @param {Element} $inputLayout, 输入框的外层容器
      */
-    open: function () {
-        var me = this;
+    open: function ($inputLayout) {
 
-        me.beforeOpenTop = $window.scrollTop();
+        clearTimeout(this.delayTimerId);
+        this.delayTimerId = setTimeout(function () {
 
-        // 修正
-        clearTimeout(me.timer);
-
-        me.timer = setTimeout(function () {
-            // 滚动底部，让输入框露出来
-            $(window).scrollTop(9999);
-        }, 360);
+            $inputLayout[0].scrollIntoView();
+        }, 380);
     },
 
     /**
      * 关闭键盘
+     *
+     * @param {Element} $inputLayout, 输入框的外层容器
      */
-    close: function () {
+    close: function ($inputLayout) {
 
         // 键盘收起来之后，滚动回展开前的位置
-        $window.scrollTop(this.beforeOpenTop);
+        // $window.scrollTop(this.beforeOpenTop);
+
+        // // 恢复
+        // $inputLayout.css({
+        //     position: 'fixed',
+        //     top: 'auto',
+        //     bottom: 0
+        // });
     }
 };
 

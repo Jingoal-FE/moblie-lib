@@ -514,15 +514,6 @@ Page.post = function (api, data, options) {
     return this.ajax(api, data, $.extend(options || {}, {type: 'POST'}));
 };
 
-// token 的监听计数器，为了避免在成功情况对 tokenRetryCount 的重置，同时重新获取的 token 却依旧失败造成重试死循环
-var tokenListenerCount = 0;
-// 当前重试次数
-var tokenRetryCount = 0;
-// 允许最大重试次数
-var tokenRetryMax = 8;
-// 重试中
-var tokenRetryProcess = false;
-
 /**
  * token 失效重新尝试
  *
@@ -533,44 +524,17 @@ var tokenRetryProcess = false;
  */
 function tokenFailedRetry(status, options) {
 
-    // 如果正在重试，则先等待之前的完成
-    if (!options || tokenRetryProcess === true) {
-        return;
-    }
-
-    if (tokenRetryCount >= tokenRetryMax) {
-        options.onReject && options.onReject();
-        return;
-    }
-
-    if (tokenListenerCount >= tokenRetryMax) {
-        tokenListenerCount = 0;
-        options.onReject && options.onReject();
-        return;
-    }
-
     if (status === 401) {
-
-        // 设置重试标记
-        tokenRetryProcess = true;
-
-        // 失败重试次数
-        tokenRetryCount++;
-        // token 次数监听
-        tokenListenerCount++;
 
         /* token 失效重试，此处调用原生方法获取 */
         /* eslint-disable */
         if (CPWebView) {
             CPWebView.uploadToken(
                 function () {
-                    tokenRetryProcess = false;
-                    tokenRetryCount = 0;
                     options.onRetry && options.onRetry();
                 },
                 function () {
-                    tokenRetryProcess = false;
-                    options.onRetry && options.onRetry();
+                    options.onReject && options.onReject();
                 }
             );
         }
@@ -730,15 +694,6 @@ Page.ajax = function (api, data, options, retryDfd) {
 
     return dfd;
 };
-
-// Page.fsTokenRequest = function () {
-// CPWebView.uploadToken(function () {
-//     getFSTokensOnCreate(options);
-// }, function () {
-//     // popupTip({style: 'componentErrorIcon', text: lang['errorTip'], time:2000});
-// });
-// };
-
 
 /**
  * ajax 请求队列

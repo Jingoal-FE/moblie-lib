@@ -4,7 +4,9 @@
  *
  */
 
+require('common/css/global.scss');
 require('./index.scss');
+
 var Page = require('common/page');
 var page = new Page();
 

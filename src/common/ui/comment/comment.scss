@@ -3,36 +3,268 @@
  * @author deo
  *
  */
+@import '../../../common/css/border-1px.scss';
 
+/**
+ * 求平方根
+ *
+ */
+@function sqrt ($r) {
+    $x0: 1;
+    $x1: $x0;
+
+    @for $i from 1 through 10 {
+        $x1: $x0 - ($x0 * $x0 - abs($r)) / (2 * $x0);
+        $x0: $x1;
+    }
+
+    @return $x1;
+}
+
+/**
+ * 获取等腰直角三角形斜边长度
+ *
+ * @param {$hypo} 直角边长度
+ */
+@function getOpposite ($hypo) {
+    @return sqrt($hypo * $hypo * 2);
+}
+
+@function getSide ($opposite) {
+    @return sqrt($opposite * $opposite * .5);
+}
+
+$border-color: #d4d7d9;
+$checkbox-border-color: #a0a0a0;
+
+/* 遮罩 */
+.comment-shadow {
+    background: #fff;
+    opacity: 0;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* 评论框的最外层容器 */
 .comment {
     position: fixed;
     left: 0;
     right: 0;
     bottom: 0;
-    background: #e8e8e8;
+}
+
+/* 评论框容器顶部边线 */
+.comment-inner {
+    @include border-1px('top', $border-color);
+
+    position: relative;
+    background: #eee;
     padding: 10px;
+    height: 30px;
+}
 
-    &-main {
-        padding: 5px;
+/* 评论框主体 */
+.comment-main {
+    @include border-1px('all', $border-color);
+
+    position: relative;
+    padding: 0 10px;
+    background: #fff;
+    overflow: hidden;
+
+    textarea {
+        display: block;
+        border: none;
+        width: 100%;
+        max-width: 100%;
+        height: 20px;
+        line-height: 21px;
+        font-size: 16px;
+        margin: 0;
+        padding: 5px 0;
         background: #fff;
-
-        textarea {
-            display: block;
-            border: none;
-            width: 100%;
-            max-width: 100%;
-            height: 16px;
-            line-height: 20px;
-            font-size: 16px;
-            margin: 0;
-            padding: 2px 0;
-        }
     }
+}
 
-    &-opened {
+/* 存在删除按钮 */
+.exist-delete-button {
+
+    .comment-main {
+        padding-right: 30px;
+    }
+}
+
+/* 展开样式 */
+.comment-opened {
+
+    .comment-inner {
+        height: auto;
 
         textarea {
             height: 60px;
         }
     }
+}
+
+.comment-opened-forios {
+    position: absolute;
+}
+
+/* 评论框的工具条 */
+.comment-bar {
+    padding: 20px 0 10px 0;
+    height: 17px;
+
+    a, span, label {
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    /* 文字 */
+    label {
+        color: #787980;
+        margin-right: 15px;
+        margin-left: 5px;
+        height: 17px;
+        line-height: 17px;
+    }
+
+    /* 每一个操作单元的容器 */
+    .comment-checkbox {
+
+        &.selected {
+
+            .checkbox-model {
+                em {
+                    @extend .ticked;
+                }
+            }
+        }
+    }
+
+    /* 发送按钮 */
+    .comment-send {
+        font-size: 15px;
+        position: absolute;
+        display: inline-block;
+        width: 60px;
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+        background: #dcdcdc;
+        border-radius: 2px;
+        color: #fff;
+        right: 10px;
+        margin-top: -7px;
+    }
+}
+
+$checkbox-size: 17;
+$tick-size: getSide($checkbox-size);
+$tick-offset: ($checkbox-size - $tick-size) * .5;
+
+/* checkbox 模型 */
+.checkbox-model {
+    @include border-1px('all', $checkbox-border-color);
+
+    width: $checkbox-size + px;
+    height: $checkbox-size + px;
+    background: #fff;
+}
+
+$ticked-color: #2299EE;
+
+/* 勾选样式 */
+.ticked {
+    position: relative;
+    transform: rotate(-45deg);
+    transform-origin: (0, 0);
+    // background: #ccc;
+    margin-left: $tick-offset + px;
+    margin-top: $tick-offset + px;
+    width: $tick-size + px !important;
+    height: $tick-size + px !important;
+    left: -1px;
+    top: -4px;
+
+    &:before, &:after {
+        position: absolute;
+        content: ' ';
+        background: $ticked-color;
+    }
+
+    /* 勾选的短边 */
+    &:before {
+        width: 2px;
+        height: 6px;
+        left: 0;
+        bottom: 0;
+    }
+
+    /* 勾选的长边 */
+    &:after {
+        width: 8px;
+        height: 2px;
+        left: 2px;
+        bottom: 0;
+    }
+}
+
+/* 删除按键 */
+.comment-delete {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.2);
+    right: 7px;
+    top: 7px;
+    width: 18px;
+    height: 18px;
+    border-radius: 100%;
+    transform: rotate(45deg);
+
+    &:before, &:after {
+        position: absolute;
+        content: ' ';
+        background: #fff;
+        transform: scale(.5);
+        top: 50%;
+        left: 50%;
+    }
+
+    &:before {
+        width: 20px;
+        height: 2px;
+        margin-top: -1px;
+        margin-left: -10px;
+    }
+
+    &:after {
+        width: 2px;
+        height: 20px;
+        margin-top: -10px;
+        margin-left: -1px;
+    }
+}
+
+/* 限制提示 */
+.comment-limit {
+    position: absolute;
+    right: 7px;
+    bottom: 5px;
+    height: 14px;
+    color: #fa575d;
+    font-size: 12px;
+}
+
+/* 附件 */
+.comment-attach {
+    position: absolute;
+    right: -8px;
+    bottom: -10px;
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    background: url('./img/attach.png') no-repeat center center;
+    background-size: 36px;
 }

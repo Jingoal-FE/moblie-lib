@@ -5,9 +5,10 @@
  * 首页
  */
 /* eslint-disable */
+require('common/css/global.scss');
 require('./index.scss');
 
-var config = require('../config');
+var config = require('src/config');
 var util = require('common/util');
 var Page = require('common/page');
 var page = new Page();

@@ -12,6 +12,9 @@
 /* 该容器为 ./lib/scroller.js 自动添加 */
 .data-loader-iscroll-wrapper {
     -webkit-transform: translate3d(0, 0, 0);
+    transform: translateZ(0);
+    position: relative;
+    z-index: 999;
 }
 
 .dataloader-refresh,
@@ -31,5 +34,4 @@
 }
 
 /* 加载更多 */
-.dataloader-more {
-}
+.dataloader-more {}

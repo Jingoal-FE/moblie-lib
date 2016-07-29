@@ -1,3 +1,5 @@
+// @import '../common/css/global.scss';
+
 body {
     font-size: 12px;
     margin: 0;
@@ -23,4 +25,15 @@ body {
         display: inline-block;
         padding: 10px 10px;
     }
+}
+
+.loading {
+    // @include loading(40px, 2px);
+
+    z-index: 99;
+}
+
+.otherContent {
+    position: relative;
+    z-index: 10;
 }

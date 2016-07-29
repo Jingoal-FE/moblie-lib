@@ -120,6 +120,13 @@ Scroller.prototype = {
     bindScrollEvents: function () {
         var me = this;
 
+        this.$wrapper.on('touchstart', function (event) {
+            event.preventDefault();
+        });
+        this.$wrapper.on('touchmove', function (event) {
+            event.preventDefault();
+        });
+
         // 下拉刷新 在刷新返回之后，下拉功能的设置
         me.on(CONST.EVENT_REFRESH_BACK, function () {
             me.keepRefresh();

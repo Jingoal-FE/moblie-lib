@@ -32,7 +32,7 @@ var Webpacker = function (config, root) {
     }
 
     this.root = root;
-    this.src = root + 'src/';
+    this.src = root + 'demo/';
 
     // 先把 js 遍历出来
     this.jsFiles = this.getJsFiles();

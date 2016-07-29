@@ -214,6 +214,10 @@ $.extend(DataLoader.prototype, {
         me.requestMore(true);
 
         me.bindEvents();
+
+        me.$wrapper.css({
+            'z-index': 999
+        });
     },
 
     /**

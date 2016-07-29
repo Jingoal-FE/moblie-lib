@@ -11,6 +11,8 @@ var CopyPlugin = require('copy-webpack-plugin');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 var dep = path.join(__dirname, '/dep/');
+var dev = path.join(__dirname, '/dev/');
+var src = path.join(__dirname, '/src/');
 var common = path.join(__dirname, '/src/common/');
 
 
@@ -67,7 +69,15 @@ module.exports = function () {
 
         alias: {
             zepto: dep + 'zepto',
+            // 第三方目录
             dep: dep,
+
+            // 源文件根目录
+            src: src,
+
+            // 还在自测中的代码目录
+            dev: dev,
+
             common: common
         },
 

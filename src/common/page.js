@@ -10,7 +10,7 @@ var util = require('./util');
 var storage = require('./localstorage');
 var Control = require('./control');
 var lang = require('./lang');
-// var log = require('./log');
+var log = require('./log');
 var md5 = require('dep/md5');
 
 var ajaxError = require('./ui/ajaxError');
@@ -355,10 +355,10 @@ Page.prototype.error = function () {};
 Page.prototype.done = function () {
     this.isDone = true;
 
-    // log.init();
+    log.init(this.ajax);
 
     // 把 log 的相关操作放到 page 上
-    // this.log = log;
+    this.log = log;
 };
 
 /**
@@ -457,8 +457,15 @@ Page.prototype.refresh = function () {
 var getRequestConfig = function (api, data, opts) {
 
     var r = {
-        url: config.API.host + config.API.prefix + api
+        url: opts && opts.url ? opts.url : (config.API.host + config.API.prefix + api)
     };
+
+    // 如果不自动拼装
+    if (opts && opts.autoUrlData === false) {
+        r.data = JSON.stringify(data);
+
+        return r;
+    }
 
     // 默认情况都需要带给 网关 的参数
     var defParams = storage.getData(config.const.PARAMS);
@@ -685,7 +692,7 @@ Page.ajax = function (api, data, options, retryDfd) {
         $.ajax(ajaxSettings);
 
         /* eslint-disable */
-        // console.info(ajaxSettings);
+        console.info(ajaxSettings);
         /* eslint-enable */
     }
     else {
@@ -748,7 +755,6 @@ function removeAjaxId(ajaxId) {
 
     return true;
 }
-
 
 Page.prototype.ajax = Page.ajax;
 Page.prototype.post = Page.post;

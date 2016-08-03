@@ -30,6 +30,11 @@ function Comment(options) {
     this._fixTimerId = null;
 
     /**
+     * 展开评论框之前的 scrollTop
+     */
+    this._beforeTop = 0;
+
+    /**
      * 评论框是否被打开
      */
     this._opened = false;
@@ -46,7 +51,7 @@ function getOptions(options) {
 
     var opts = {
 
-        // 输入框上限
+        // 输入文字上限
         limit: 7,
 
         zIndex: 90,
@@ -226,6 +231,8 @@ $.extend(Comment.prototype, {
     open: function () {
         var me = this;
 
+        this._beforeTop = window.scrollY;
+
         this.$main.addClass(OPENED_CLASS);
         this.$shadow.removeClass('hide');
 
@@ -234,6 +241,13 @@ $.extend(Comment.prototype, {
         if (util.isApple()) {
             clearTimeout(this._fixTimerId);
             this._fixTimerId = setTimeout(function () {
+
+                // 直接把输入框置于容器的最底部
+                me.$main.css({
+                    position: 'absolute',
+                    top: document.documentElement.scrollHeight,
+                    bottom: 'auto'
+                });
 
                 me.$main[0].scrollIntoView();
             }, 180);
@@ -260,6 +274,14 @@ $.extend(Comment.prototype, {
         }, 37);
 
         me.$input.blur();
+
+        $(window).scrollTop(this._beforeTop);
+
+        me.$main.css({
+            position: 'fixed',
+            top: 'auto',
+            bottom: 0
+        });
 
         me._opened = false;
     },
@@ -313,7 +335,6 @@ $.extend(Comment.prototype, {
      * 是否超过输入限制
      */
     isOutLimit: function () {
-        // return this.getValue().length > this.opts.limit;
         if (!this.opts.hasLimit) {
             return false;
         }

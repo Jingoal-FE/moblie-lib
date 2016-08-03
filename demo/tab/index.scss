@@ -1,0 +1,34 @@
+@import "../../src/common/css/global.scss";
+
+$height: 40px;
+
+.tab {
+    @include border-1px('bottom');
+
+    position: relative;
+    height: $height;
+    overflow: hidden;
+    user-select: none;
+    margin-bottom: 15px;
+
+    ul {
+        position: absolute;
+
+        li:not(:first-child) {
+            @include border-1px('left');
+        }
+
+        li {
+            float: left;
+            text-align: center;
+            height: $height;
+            line-height: $height;
+            color: #666;
+
+            &.tab-active {
+                color: #000;
+                background: #eee;
+            }
+        }
+    }
+}

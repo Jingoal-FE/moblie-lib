@@ -1,4 +1,7 @@
-// @import "/src/common/css/global.scss";
+@import "../../src/common/css/global.scss";
+
+body {
+}
 
 .page-failed {
 
@@ -14,11 +17,23 @@
         width: rem(100px);
         height: rem(20px);
         line-height: rem(20px);
-        background: #ccc;
+        background: #d5d7d9;
         margin-top: rem(5px);
     }
     .age {
         font-size: 14px;
         width: 100px;
+        background: #eee;
+    }
+}
+
+ul {
+
+    li {
+        padding: rem(10px);
+
+        a {
+            display: block;
+        }
     }
 }

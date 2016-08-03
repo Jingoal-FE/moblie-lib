@@ -5,7 +5,6 @@
  * 首页
  */
 /* eslint-disable */
-require('common/css/global.scss');
 require('./index.scss');
 
 var config = require('src/config');

@@ -17,12 +17,18 @@ var config = {
 
         prefix: '/data/',
 
-        TEST_URL: 'test',
+        TEST_URL: 'test'
     }
 };
 
 config.const = {
-    PARAMS: 'Mobile-Lib'
-}
+    PARAMS: 'Mobile-Lib',
+
+    // 用于日志 数据中心需要
+    PRODUCT_TAG: 'moblie-lib',
+
+    // 日志的 ls db key
+    LOG_KEY: 'MOBILE_LOG'
+};
 
 module.exports = config;

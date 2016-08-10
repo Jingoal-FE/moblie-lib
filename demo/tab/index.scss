@@ -9,7 +9,7 @@ $height: 40px;
     height: $height;
     overflow: hidden;
     user-select: none;
-    margin-bottom: 15px;
+    background: #fff;
 
     ul {
         position: absolute;
@@ -31,4 +31,20 @@ $height: 40px;
             }
         }
     }
+}
+
+.content, .tab-content {
+    padding: 10px;
+}
+#content {
+    height: 200px;
+}
+
+.tab-border-all {
+    @include border-1px('all');
+}
+
+#tab-slide {
+    position: relative;
+    z-index: 999;
 }

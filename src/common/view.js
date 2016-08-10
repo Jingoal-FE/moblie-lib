@@ -7,7 +7,6 @@
  */
 
 var Mustache = require('dep/mustache');
-// var lang = require('./lang');
 
 /**
  * Mustache

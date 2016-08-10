@@ -22,6 +22,8 @@ var connect = require('gulp-connect');
 
 var os = require('os');
 
+var KarmaServer = require('karma').Server;
+
 var getIfs = function () {
     var osnet = os.networkInterfaces();
     return (osnet.en0 || osnet.eth0) || osnet['以太网'];
@@ -72,6 +74,16 @@ var root = path.join(__dirname, '/');
 mockServer('./mock', config.mock, config.https);
 
 /**
+ * Run test once and exit
+ */
+gulp.task('test', function (done) {
+    new KarmaServer({
+        configFile: __dirname + '/karma.conf.js',
+        singleRun: true
+    }, done).start();
+});
+
+/**
  * 开发环境
  */
 gulp.task('dev', function () {
@@ -81,4 +93,9 @@ gulp.task('dev', function () {
     var webpacker = new Webpacker(config, root);
 
     webpacker.devStart();
+});
+
+// 预设任务
+gulp.task('dt', function () {
+    gulp.start('dev', 'test');
 });

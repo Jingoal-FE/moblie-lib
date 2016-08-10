@@ -17,7 +17,12 @@ function Tab(options) {
 
     Control.call(this, options);
 
-    this.opts = getOptions(options);
+    this.opts = this.getOptions(options);
+
+    /**
+     * 移动标记，touchmove 会设置为 true
+     */
+    this.isMove = false;
 
     /**
      * 移动值
@@ -44,6 +49,11 @@ function Tab(options) {
      */
     this.fixTo = null;
 
+    /**
+     * 判断tab 的总数的大小 是否超过了屏幕宽度
+     */
+    this.isTabExceed = false;
+
     this.momentumTimeStart = 0;
     this.momentumTimeEnd = 0;
 
@@ -52,30 +62,39 @@ function Tab(options) {
 
 $.extend(Tab.prototype, Control.prototype);
 
-function getOptions(options) {
-
-    return $.extend({
-
-        /**
-         * Main
-         */
-        main: null,
-
-        /**
-         * 拖动的时候允许超过边界的最大值
-         */
-        dragMax: 80,
-
-        viewNum: 3,
-
-        activeClass: 'tab-active',
-
-        activeIndex: 0
-
-    }, options || {});
-}
-
 $.extend(Tab.prototype, {
+
+    getOptions: function (options) {
+
+        return $.extend({
+
+            /**
+             * Main
+             */
+            main: null,
+
+            /**
+             * 拖动的时候允许超过边界的最大值
+             */
+            dragMax: 80,
+
+            /**
+             * 可视区域完整的个数
+             */
+            viewNum: 3,
+
+            /**
+             * 激活状态的tab class
+             */
+            activeClass: 'tab-active',
+
+            /**
+             * 默认激活的 索引 tab
+             */
+            activeIndex: 0
+
+        }, options || {});
+    },
 
     init: function () {
 
@@ -84,19 +103,19 @@ $.extend(Tab.prototype, {
         this.$window = $(window);
 
         this.$ul.css({
-            'z-index': 999
+            zIndex: 99
         });
 
+        // 先设置好 tab ul 的 translate
         this.$ul[0].style[util.prefixStyle('transform')] = 'translate3d(0px, 0px, 0px)';
 
-        this.setLayout();
+        this.fixTabSize();
 
         this.setMoveMax();
 
         this.bindEvents();
 
         var $def = this.$ul.find('li').eq(this.opts.activeIndex);
-
         if ($def && $def.length) {
             $def.trigger('click');
         }
@@ -105,16 +124,27 @@ $.extend(Tab.prototype, {
     /**
      * 设置tab，使屏幕内部始终保持半个 tab 可见
      */
-    setLayout: function () {
+    fixTabSize: function () {
+        var winWidth = this.$window.width();
 
         this.$main.css({
-            width: this.$window.width()
+            width: winWidth
         });
 
         var $li = this.$main.find('li');
 
         // 重新修正每一个的宽度，用于保证始终能漏出半个 tab 可视区域的最右侧位置
-        var fixSize = Math.floor(this.$window.width() / (this.opts.viewNum + .5));
+        var fixSize = Math.floor(winWidth / (this.opts.viewNum + .5));
+
+        // 这里再次做一次判断，如果修正后的 tab 总宽度小于屏幕宽度，则需要重新计算
+        // 同时这里需要禁用一些不需要的功能
+        if (fixSize * $li.length <= winWidth) {
+            fixSize = winWidth / $li.length;
+            this.isTabExceed = false;
+        }
+        else {
+            this.isTabExceed = true;
+        }
 
         $li.css({
             width: fixSize
@@ -137,7 +167,10 @@ $.extend(Tab.prototype, {
         var me = this;
 
         me.$ul.on('click', 'li', function () {
-            me.clickFix2View(this);
+
+            if (me.isTabExceed) {
+                me.clickFix2View(this);
+            }
 
             $(this)
                 .addClass(me.opts.activeClass)
@@ -148,39 +181,54 @@ $.extend(Tab.prototype, {
         });
 
         me.$ul.on('touchstart', function (event) {
-            var touch = event.touches[0];
 
-            // 起始坐标，上次拖动的距离
-            me.originX = me.diffX;
+            if (me.isTabExceed) {
+                var touch = event.touches[0];
 
-            // 拖动的起点
-            me.startX = touch.pageX;
+                // 起始坐标，上次拖动的距离
+                me.originX = me.diffX;
 
-            me.momentumTimeStart = +new Date();
+                // 拖动的起点
+                me.startX = touch.pageX;
+
+                me.momentumTimeStart = +new Date();
+                me.momentumTimeEnd = 0;
+
+                me.isMove = false;
+            }
         });
 
         me.$ul.on('touchmove', function (event) {
             event.preventDefault();
 
-            var touch = event.touches[0];
+            if (me.isTabExceed) {
 
-            // 移动距离
-            me.diffX = me.originX + touch.pageX - me.startX;
+                // 设置移动标记
+                me.isMove = true;
 
-            // 获取方向
-            me.dir = touch.pageX - me.startX < 0 ? -1 : 1;
+                var touch = event.touches[0];
 
-            me.touchMove();
+                // 移动距离
+                me.diffX = me.originX + touch.pageX - me.startX;
+
+                // 获取方向
+                me.dir = touch.pageX - me.startX < 0 ? -1 : 1;
+
+                me.touchMove();
+            }
         });
 
         me.$ul.on('touchend', function (event) {
-            // var touch = event.touches[0];
 
-            me.momentumTimeEnd = +new Date();
+            // 进行了 touchmove 以及 tab 超过屏幕
+            if (me.isMove && me.isTabExceed) {
 
-            me.touchBack();
+                me.momentumTimeEnd = +new Date();
 
-            me.momentum();
+                me.touchBack();
+
+                me.momentum();
+            }
         });
     },
 
@@ -213,7 +261,7 @@ $.extend(Tab.prototype, {
             this.fixTo = null;
         }
 
-        this.animate3d(this.diffX, '');
+        this.tabSlide(this.diffX, '');
     },
 
     /**
@@ -230,7 +278,7 @@ $.extend(Tab.prototype, {
 
         // Diff (ms)
         if (this.momentumTimeEnd - this.momentumTimeStart < 188) {
-            this.animate3d(step, util.prefixStyle('transform') + ' 400ms cubic-bezier(.58,.59,.51,.83)');
+            this.tabSlide(step, util.prefixStyle('transform') + ' 400ms cubic-bezier(.58,.59,.51,.83)');
 
             this.diffX = step;
         }
@@ -247,7 +295,7 @@ $.extend(Tab.prototype, {
 
         this.diffX = this.fixTo;
 
-        this.animate3d(this.fixTo);
+        this.tabSlide(this.fixTo);
     },
 
     /**
@@ -271,7 +319,7 @@ $.extend(Tab.prototype, {
             // 这个移动终点值要保存在 diffX 上，因为在 touchstart 的时候是获取的 diff 赋值到的 origin 上
             this.diffX = moveTo;
 
-            this.animate3d(moveTo);
+            this.tabSlide(moveTo);
         }
     },
 
@@ -297,22 +345,33 @@ $.extend(Tab.prototype, {
     },
 
     /**
-     * 动画函数
+     * Tab 动画入口
      *
      * @param {number} dis, 移动距离
      * @param {string} trans, transition 字符串配置
      */
-    animate3d: function (dis, trans) {
+    tabSlide: function (dis, trans) {
+        this.animate3d(this.$ul[0], dis + 'px', trans);
+    },
+
+    /**
+     * 动画函数
+     *
+     * @param {Element} targetElement, 进行动画的元素
+     * @param {string} dis, 移动距离, eg: 100px, 50%
+     * @param {string} trans, transition 字符串配置
+     */
+    animate3d: function (targetElement, dis, trans) {
         var transform = util.prefixStyle('transform');
         var transition = util.prefixStyle('transition');
 
-        this.$ul[0].style[transform] = 'translate3d(' + dis + 'px, 0px, 0px)';
+        targetElement.style[transform] = 'translate3d(' + dis + ', 0px, 0px)';
 
         if (trans !== undefined) {
-            this.$ul[0].style[transition] = trans;
+            targetElement.style[transition] = trans;
         }
         else {
-            this.$ul[0].style[transition] = transform + ' 260ms cubic-bezier(.48, .14, .41, .97)';
+            targetElement.style[transition] = transform + ' 260ms cubic-bezier(.48, .14, .41, .97)';
         }
     }
 });

@@ -8,27 +8,55 @@
 </head>
 <body>
 
-    <div id="tab" class="tab">
+    <!-- 该容器是用于 sticky，的移出屏幕的计算容器 -->
+    <div>
+        <!-- 内容带滑动 -->
+        <div id="tab-slide" class="tab">
+            <ul>
+                <li tab-key="a">SLIDE A</li>
+                <li tab-key="b">SLIDE B</li>
+                <li tab-key="c">SLIDE C</li>
+                <li tab-key="d">SLIDE D</li>
+            </ul>
+        </div>
+
+        <div id="content-slide">
+             <div tab-content="a" class="tab-content">{SLIDE A} - CONTENT</div>
+             <div tab-content="b" class="tab-content">{SLIDE B} - CONTENT</div>
+             <div tab-content="c" class="tab-content">{SLIDE C} - CONTENT</div>
+             <div tab-content="d" class="tab-content">{SLIDE D} - CONTENT</div>
+        </div>
+    </div>
+
+    <!-- 普通的tab 点击功能 -->
+    <div id="tab" class="tab tab-border-all">
         <ul>
-            <li>ROW A</li>
-            <li>ROW B</li>
-            <li>ROW C</li>
-            <li>ROW D</li>
-            <li>ROW E</li>
-            <li>ROW F</li>
-            <li>ROW G</li>
-            <li>ROW AA</li>
-            <li>ROW BB</li>
-            <li>ROW CC</li>
-            <li>ROW DD</li>
-            <li>ROW EE</li>
-            <li>ROW FF</li>
-            <li>ROW GG</li>
+            <li>TAB A</li>
+            <li>TAB B</li>
+            <li>TAB C</li>
+            <li>TAB D</li>
         </ul>
     </div>
 
-    <div id="content">
-        CONTENT
+    <div id="content" class="content">
+        Click Tab
+    </div>
+
+    <!-- 内容带滑动 -->
+    <div id="tab-slide1" class="tab tab-border-all">
+        <ul>
+            <li tab-key="a">SLIDE 1 A</li>
+            <li tab-key="b">SLIDE 2 B</li>
+            <li tab-key="c">SLIDE 3 C</li>
+            <li tab-key="d">SLIDE 4 D</li>
+        </ul>
+    </div>
+
+    <div id="content-slide1">
+         <div tab-content="a" class="tab-content">{SLIDE 1 A} - CONTENT</div>
+         <div tab-content="b" class="tab-content">{SLIDE 2 B} - CONTENT</div>
+         <div tab-content="c" class="tab-content">{SLIDE 3 C} - CONTENT</div>
+         <div tab-content="d" class="tab-content">{SLIDE 4 D} - CONTENT</div>
     </div>
 
     <script type="text/javascript" src="./cordova.js"></script>

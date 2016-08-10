@@ -10,8 +10,6 @@ var ERR_MSG = {
     NOT_RENDERED: 'You should render Control first'
 };
 
-// var Listener = require('./listener');
-// var listener = new Listener();
 var listener = require('./listener');
 var util = require('./util');
 var view = require('./view');

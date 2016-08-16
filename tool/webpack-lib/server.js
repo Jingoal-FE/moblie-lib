@@ -1,3 +1,9 @@
+/**
+ * @file server.js
+ * @author deo
+ *
+ */
+
 /* eslint-disable */
 
 var _ = require('underscore');
@@ -10,6 +16,7 @@ var connect = require('gulp-connect');
  * webpack dev server 配置
  */
 var getServerConfig = function (me) {
+
     return {
         // dev 模式 静态入口文件访问位置
         contentBase: '',

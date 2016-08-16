@@ -4,13 +4,13 @@
  *
  * 首页
  */
-/* eslint-disable */
+
 require('./index.scss');
 
-var config = require('src/config');
-var util = require('common/util');
 var Page = require('common/page');
 var page = new Page();
+var config = require('src/config');
+var util = require('common/util');
 
 /**
  * 页面逻辑
@@ -50,10 +50,6 @@ page.failed = function () {
     console.info('Page Fail');
     // page.failedRender();
 };
-
-// page.failedRender = function () {
-//     $('#main').html('<div class="page-failed">' + this.lang.pageFailed + '</div>');
-// };
 
 /**
  * 请求页面接口

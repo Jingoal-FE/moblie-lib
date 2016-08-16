@@ -54,6 +54,7 @@ var pro = document.location.protocol;
  * 日志服务器 url
  *
  * @type {String}
+ * https://jincai.jingoal.com/agent/log/logsend?topic=topic3&msg=6
  */
 var LOG_URL = config.debug
     ? 'https://192.168.10.152:8445/agent/log/logsend'

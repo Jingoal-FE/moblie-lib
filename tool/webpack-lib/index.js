@@ -2,9 +2,18 @@
  * @file index.js
  * @author deo
  *
- * webpacker
+ * webpacker 主函数，该函数主要是为了获取各种基础配置信息
+ *
+ * 常用 API
+ * 1: this.getCommonPlugins() 获取 公共的基础组件
+ * 2: this.getCssLoader('sass') 获取 css 加载器
+ * 3: this.htmlPlugins 获取 页面插件
+ * 4: this.jsEntries 获取 入口js 文件，入口js 默认规则: path/name.html && path/name.js
+ *
  */
+
 /* eslint-disable */
+
 var _ = require('underscore');
 var glob = require('glob');
 var webpack = require('webpack');
@@ -12,15 +21,16 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 var BellOnBundlerErrorPlugin = require('bell-on-bundler-error-plugin');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
+// webpack config file
 var servers = require('./server');
 
 /**
  * Main
  *
  * @param {Object} config, 默认使用 make.webpack.js 中的 config
- * @param {string} root, 项目根目录
+ * @param {string} options.root, 项目根目录
  */
-var Webpacker = function (config, root) {
+var Webpacker = function (config) {
 
     this.config = {};
 
@@ -31,8 +41,8 @@ var Webpacker = function (config, root) {
         return;
     }
 
-    this.root = root;
-    this.src = root + 'demo/';
+    this.root = config.root;
+    this.entry = config.root + config.entry;
 
     // 先把 js 遍历出来
     this.jsFiles = this.getJsFiles();
@@ -113,7 +123,7 @@ Webpacker.prototype.getJsFiles = function () {
     var me = this;
     var map = {};
 
-    var entryFiles = glob.sync(me.src + '**/*.js');
+    var entryFiles = glob.sync(me.entry + '**/*.js');
 
     entryFiles.forEach(function (filePath) {
         var page = me.file(filePath);
@@ -140,7 +150,7 @@ Webpacker.prototype.getPager = function () {
     var allChunks = [];
 
     // 查找 模板 根目录下的入口文件
-    var pages = glob.sync(me.src + '**/*.html');
+    var pages = glob.sync(me.entry + '**/*.html');
 
     pages.forEach(function (filePath) {
 
@@ -162,10 +172,14 @@ Webpacker.prototype.getPager = function () {
             // script 插入位置
             conf.inject = 'body';
 
+            console.log(conf);
+
             htmlPlugins.push(
+
+                // 创建页面插件
                 new HtmlWebpackPlugin(conf)
             );
-            console.log(conf);
+
             jsEntries[page.name] = jsFiles[page.name];
 
             allChunks.push(page.name);
@@ -238,8 +252,12 @@ Webpacker.prototype.getCssLoader = function (name) {
         xCss = '!' + name + '-loader';
     }
     
-    var cssLoader = null;
+    return ExtractTextPlugin.extract('style-loader', 'css-loader!autoprefixer-loader' + xCss, {
+        // 关键，这个会被添加到 生成后的 css 的 image url 的最前面
+        publicPath: '../'
+    });
 
+    /*
     if (this.config.debug) {
         // 开发阶段，css直接内嵌
         // cssLoader = 'style-loader!css-loader' + xCss + '!autoprefixer-loader';
@@ -258,8 +276,7 @@ Webpacker.prototype.getCssLoader = function (name) {
             publicPath: '../'
         });
     }
-
-    return cssLoader;
+    */
 };
 
 /**
@@ -272,11 +289,9 @@ Webpacker.prototype.devStart = function () {
 /**
  * 模拟生产环境，测试打包后的文件等，是否正确
  */
-Webpacker.prototype.testStart = function () {
+Webpacker.prototype.releaseStart = function () {
     servers.connect.call(this);
     servers.build.call(this);
 };
-
-Webpacker.prototype.mockStart = require('./mock');
 
 module.exports = Webpacker;

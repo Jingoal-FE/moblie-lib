@@ -38,28 +38,11 @@ module.exports = function () {
     webpackConfig.entry = this.jsEntries;
 
     var copyPlugins = [
-        // {
-        //     from: './dep/ui/',
-        //     to: './dep/ui/'
-        // }
-        // ,
         {
             from: './src/img/shell/',
             to: './img/shell/'
         }
     ];
-
-    // // 非生产环境，需要使用 mock cordova.js 
-    // if (process.env.NODE_ENV !== 'prod') {
-    //     copyPlugins.push({
-    //         from: './cordova.js',
-    //         to: './cordova.js'
-    //     });
-    // }
-    // // 生产环境
-    // else {
-    //     webpackConfig.devtool = false;
-    // }
 
     // 设置 resolve
     webpackConfig.resolve = {
@@ -78,6 +61,7 @@ module.exports = function () {
             // 还在自测中的代码目录
             dev: dev,
 
+            // common 目录
             common: common
         },
 
@@ -139,15 +123,14 @@ module.exports = function () {
                 // 图片加载器
                 // Reference: https://github.com/webpack/url
                 test: /\.(jpe?g|png|gif)$/i,
-                loaders: [
+                loaders: [ 
+                    // limit 的值为多少size 以下的图片会被自动 base64
                     'url-loader?limit=1&name=' + imgPath + '[name].[ext]'
                     // 'url-loader?limit=1&name=' + imgPath + '[hash:8].[name].[ext]'
                 ]
             }
         ]
     };
-
-    // var ignoreFiles = new webpack.IgnorePlugin(/\/mobiscroll-2.17.0.js$/);
 
     // 插件集合
     webpackConfig.plugins = [
@@ -169,16 +152,14 @@ module.exports = function () {
     // * 最为重要的部分，其中包含页面入口配置
     webpackConfig.plugins = webpackConfig.plugins.concat(this.htmlPlugins);
 
-    // if (!config.debug) {
-        // 提取样式
-        // Reference: https://github.com/webpack/extract-text-webpack-plugin
-        // 'common/css/[contenthash:8].[name].min.css'
-        webpackConfig.plugins.push(
-            new ExtractTextPlugin('css/[name].min.css', {
-                allChunks: true
-            })
-        );
-    // }
+    // 提取样式
+    // Reference: https://github.com/webpack/extract-text-webpack-plugin
+    // 'common/css/[contenthash:8].[name].min.css'
+    webpackConfig.plugins.push(
+        new ExtractTextPlugin('css/[name].min.css', {
+            allChunks: true
+        })
+    );
 
     console.log(webpackConfig);
 
